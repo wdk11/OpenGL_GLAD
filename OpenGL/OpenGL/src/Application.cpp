@@ -17,20 +17,22 @@ void processInput(GLFWwindow* window)
 //着色器的创建
 const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
-"out vec4 vertexColor;\n"
+"layout (location = 1) in vec3 aColor;\n"
+"out vec3 ourColor;\n"
 "void main()\n"
 "{\n"
 "   gl_Position = vec4(aPos, 1.0);\n"
-"   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
+"   ourColor = aColor;\n"
 "}\0";
 
 //片段着色器的创建
 const char* fragmentShaderSource = "#version 330 core\n"
+"in vec3 ourColor;\n"
 "out vec4 FragColor;\n"
-"in vec4 vertexColor;\n"
+//"uniform vec4 ourColor;\n"
 "void main()\n"
 "{\n"
-"    FragColor = vertexColor;\n"
+"    FragColor = vec4(ourColor, 1.0);\n"
 "}\0";
 
 
@@ -86,10 +88,10 @@ int main()
 
 	//顶点输入
 	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
+		// 位置              // 颜色
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // 右下
+		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // 左下
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // 顶部
 	};
 	//索引输入
 	unsigned int indices[] = {
@@ -97,8 +99,8 @@ int main()
 		// 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
 		// 这样可以由下标代表顶点组合成矩形
 
-		0, 1, 3, // 第一个三角形
-		1, 2, 3  // 第二个三角形
+		0, 1, 2, // 第一个三角形
+		//1, 2, 3  // 第二个三角形
 	};
 	//创建VBO、VAO、EBO
 	unsigned int VBO, VAO, EBO;
@@ -116,8 +118,10 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	//告诉GPU怎么取
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);//解绑
 	glBindVertexArray(0);//解绑
 
@@ -153,9 +157,15 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 		//启用着色器
 		glUseProgram(shaderProgram);
+		////使用uniform
+		//float timeValue = glfwGetTime();
+		//float greenValue = sin(timeValue) / 2.0f + 0.5f;
+		//int vertexColorLacation = glGetUniformLocation(shaderProgram, "ourColor");
+		//glUniform4f(vertexColorLacation, 0.0f, greenValue, 0.0f, 1.0f);
 		//绑定顶点数组
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		////渲染指令
 		//glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		//glClear(GL_COLOR_BUFFER_BIT);

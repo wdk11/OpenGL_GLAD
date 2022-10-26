@@ -396,6 +396,29 @@ vao-vbo-ebo
 
 修改其他VAO都需要调用glBindVertexArray，它会直接解绑旧的对象并且绑定一个新的，因此通常情况下，我们不需要通过调用glBindVertexArray(O)来解绑VAO，当然VBO也是这样。所以在使用中，无需过度在意是否解绑了VAO和VBO，通常是不需要解绑的。
 
+## Uniform
+
+1. 在着色器里声明uniform
+2. 通过glGetUniformLocation查询"ourColor"在哪
+3. 再通过glUniform4f设置Uniform的值
+4. ps一定要记得使用了glUseProgram(shaderProgram)才能设置值，因为它是在当前激活的着色器程序中设置uniform的。
+
+![image-20221027002730662](README.assets/image-20221027002730662.png)
+
+## 把颜色数据放进顶点数据中
+
+1. 重新告诉GPU定点数据的分布，位置放在Location1,颜色放在location2
+2. 着色器里取数据
+3. 开画
+
+我们只指定了三个顶点的颜色，但光栅化会对这些进行一种线性插值
+
+## 重点，自己抽象着色器类
+
+1. 首先我们要知道这个着色器到底要实现什么功能
+2. 无非就是读取txt文件，然后创建着色器，把数据放进去，两个着色器绑定，最后删除着色器
+3. 开画
+
 ## 一些坑
 
 ### 在glewInit()之前记得先创建一个初始化的Opengl上下文窗口
