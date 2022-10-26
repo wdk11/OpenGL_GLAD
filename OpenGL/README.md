@@ -4,39 +4,45 @@
 
 ## 环境配置与搭建
 
+### git管理代码
+
+https://blog.csdn.net/shulianghan/article/details/114926281
+
+https://greambwang.blog.csdn.net/article/details/118345307?spm=1001.2101.3001.6650.5&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-5-118345307-blog-114926281.pc_relevant_multi_platform_featuressortv2dupreplace&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-5-118345307-blog-114926281.pc_relevant_multi_platform_featuressortv2dupreplace&utm_relevant_index=6
+
 ### ctrl+shift+space
 
 ### 创建一个空项目取名OpenGL
 
 1.点击这个然后创建一个文件夹取名src
 
-![image-20220908025400855](Opengl.assets\image-20220908025400855.png)
+![image-20220908025400855](README.assets\image-20220908025400855.png)
 
 2.新建一个cpp程序
 
 3.打开这个文件夹的地址，找到sln文件所在的地方即解决方案所在地方创建一个Dependencies文件夹，用来放各种库
 
-![image-20220908025640209](Opengl.assets\image-20220908025640209.png)
+![image-20220908025640209](README.assets\image-20220908025640209.png)
 
-![image-20220908025829816](Opengl.assets\image-20220908025829816.png)
+![image-20220908025829816](README.assets\image-20220908025829816.png)
 
-![image-20220908025845166](Opengl.assets\image-20220908025845166.png)
+![image-20220908025845166](README.assets\image-20220908025845166.png)
 
-![image-20220908025905155](Opengl.assets\image-20220908025905155.png)
+![image-20220908025905155](README.assets\image-20220908025905155.png)
 
-![image-20220908025917051](Opengl.assets\image-20220908025917051.png)
+![image-20220908025917051](README.assets\image-20220908025917051.png)
 
 ### 现在文件夹里有各种库了，需要去vs2019链接他们，记住所有配置和win32
 
 简单的来说就是把GLFW和GLEW里的头文件以及lib静态库放进denpendencies文件夹里以及include他们、链接他们，并指明lib的名字
 
-![image-20220908030043612](Opengl.assets\image-20220908030043612.png)
+![image-20220908030043612](README.assets\image-20220908030043612.png)
 
-![image-20220908030113210](Opengl.assets\image-20220908030113210.png)
+![image-20220908030113210](README.assets\image-20220908030113210.png)
 
-![image-20220908030200437](Opengl.assets\image-20220908030200437.png)
+![image-20220908030200437](README.assets\image-20220908030200437.png)
 
-![image-20220908030221662](Opengl.assets\image-20220908030221662.png)
+![image-20220908030221662](README.assets\image-20220908030221662.png)
 
 ### 下载GLFW、GLEW（或者直接用我的dependencies，里面已经包含好了，只需要你在VS2019里设置一些其他的东西即可）（#include <GL/glew.h>
 #include <GLFW/glfw3.h>）先后顺序不能错，这是源代码决定的）
@@ -45,11 +51,350 @@
 
 https://www.glfw.org/download.html下载，32位的windows二进制文件（下载64位或者32位取决于你编译的时候是x64还是x86），也可以下载源码自己编译。
 
-![image-20220908025146778](Opengl.assets\image-20220908025146778.png)
+![image-20220908025146778](README.assets\image-20220908025146778.png)
 
 下载之后将这两个文件复制粘贴至
 
-![image-20220908025250115](Opengl.assets\image-20220908025250115.png)
+![image-20220908025250115](README.assets\image-20220908025250115.png)
+
+### glad如何配置
+
+进入https://glad.dav1d.de/，选择版本等等
+
+![image-20221024144115212](README.assets/image-20221024144115212.png)
+
+然后生成，下载glad.zip
+
+GLAD现在应该提供给你了一个zip压缩文件，包含两个头文件目录，和一个**glad.c**文件。将两个头文件目录（**glad**和**KHR**）复制到你的**Include**文件夹中（或者增加一个额外的项目指向这些目录），并添加**glad.c**文件到你的工程中。
+
+简单来说就是把头文件放进包含目录，lib文件要加一个库目录，并且链接器也要增加glfw3.lib以及opengl32.lib,
+
+tips:
+
+khr可以与glad放在一起
+
+![image-20221024150814482](README.assets/image-20221024150814482.png)
+
+也可以不必
+
+## 第二次学习的学习过程
+
+### 第一步创建上下文
+
+首先初始化等等，创建一个上下文
+
+### GLAD
+
+GLAD是用来管理OpenGL的函数指针的，可以利用这个库去找OpenGL的函数
+
+### 特别记住GLAD需要置于在其它依赖于OpenGL的头文件（如GLFW）之前
+
+### 你好，窗口
+
+```C++
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
+#include <iostream>
+
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+}
+
+
+int main()
+{
+	glfwInit();//确定版本，并进行初始化
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);//创建了一个可供渲染的窗口，后两个参数暂时用不到，可以不用
+	if (window == NULL)
+	{
+		std::cout << "Create window failed" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);//设置为主要上下文窗口
+
+	//初始化GLAD
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
+
+	//视口，渲染窗口的尺寸大小
+	glViewport(0, 0, 800, 600);//我们也可以不用挤满，这样的话就可以放置一些其他东西在窗口里了
+
+	//然而，当用户改变窗口的大小的时候，视口也应该被调整。我们可以对窗口注册一个回调函数(Callback Function)，它会在每次窗口大小被调整的时候被调用。这个回调函数的原型如下：
+
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+	//下面几行的代码就实现了一个简单的渲染循环：
+	while (!glfwWindowShouldClose(window))
+	{
+		//输入
+		processInput(window);//检查是否按了esc，没有按就不会把window设置为需要关闭
+		//渲染指令
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		//检查并调用事件，交换缓冲
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
+
+	glfwTerminate();//相当于释放所有资源
+
+	return 0;
+}
+```
+
+### 你好三角形
+
+首先记住三个关键词
+
+1. 顶点数组对象：Vertex Array Object，VAO
+2. 顶点缓冲对象：Vertex Buffer Object，VBO
+3. 元素缓冲对象：Index Buffer Object，IBO
+
+在OpenGL中大部分工作都是关于把3D坐标转变为适应屏幕的2D像素，3D转为2D的处理过程是由OpenGL的图形渲染管线管理的
+
+#### 着色器
+
+图形渲染管线很容易并行执行，现在GPU都有成千上万个小处理核心，它们在GPU上为每一个渲染管线运行各自的小程序，从而快速渲染你的数据，这些小程序叫做着色器。
+
+OpenGL着色器是用OpenGL着色器语言(OpenGL Shading Language, GLSL)写成的
+
+1. 顶点着色器（告诉GPU顶点）
+
+2. 图元装配（告诉基本单元，是点还是三角形）
+
+3. 几何着色器（得到是点，那么就可以把所有基本数据生成几何形状）
+
+4. 光栅化阶段（光栅化阶段，生成像素点）
+
+5. 片段着色器（片段是渲染一个像素的所有数据，也就是呈现的颜色，需要计算很多东西，光照、阴影、颜色等等）
+
+   主要而言，我们必须定义一个顶点着色器和片段着色器（因为GPU没有）
+
+#### 顶点输入
+
+首先，输入的是一个相对位置，我们在CPU上创建了点后需要与VBO顶点缓冲对象进行绑定，VBO管理这个内存，它会在显存里存储大量顶点。好处就是可以发送一大批数据，CPU与GPU连接较慢，发送到了显存，那么顶点着色器就可以立即访问顶点
+
+步骤
+
+1. 创建一个顶点缓冲对象VBO，绑定
+2. 绑定数组
+3. 告诉GPU数组的分布
+
+#### 顶点着色器
+
+1. 编辑一个GLSL的代码
+2. 创建一个无符号的顶点着色器ID，将其绑上
+3. 整合一下
+
+#### 片段着色器
+
+与上诉同理
+
+#### 最后需要把多个着色器合并之后并链接最终的版本
+
+1. 编辑一个着色器项目
+2. 将两个着色器绑住
+3. 链接到一起，得到一个程序对象
+4. 激活程序对象
+
+#### 在着色器对象连接到程序对象后记得删除着色器对象，不再需要了
+
+#### 我们已经把数据发送给了GPU，但是GPU还不知道怎么理解内存中的顶点数据
+
+我们已经在顶点着色器里的0位置创建了一个顶点向量，相当于现在把数据放进去，然后启用顶点属性
+
+代码
+
+```C++
+	//顶点输入
+	float vertices[] = {
+	-0.5f, -0.5f, 0.0f,
+	 0.5f, -0.5f, 0.0f,
+	 0.0f,  0.5f, 0.0f
+	};
+
+	//顶点缓冲对象
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);//意思就是把1绑定在VBO上了，缓冲ID为1，是独一无二的
+	//绑定数组
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//确定数组的数据以及位置
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	//着色器的创建
+	const char* vertexShaderResource = "#version 330 core\n"
+		"layout(location = 0) in vec3 apos;\n"
+		"void main()\n"
+		"{\n"
+		"gl_Position = vec4(apos.x, apos.y, apos.z, 1.0);\n"
+		"}\0";
+	unsigned int vertexShader;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderResource, NULL);
+	glCompileShader(vertexShader);
+
+	//片段着色器的创建
+	const char* fragmentShaderResource = "#version 330 core\n"
+		"out vec4 FragColor;\n"
+		"void main()\n"
+		"{\n"
+		"FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0);\n"
+		"}\0";
+
+	unsigned int fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderResource, NULL);
+	glCompileShader(fragmentShader);
+	//创建着色器程序
+	unsigned int shaderProgram;
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+
+	//删除着色器
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+	//告诉GPU数据的形式
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GL_FLOAT), (void*)0);
+	//启用0号顶点属性
+	glEnableVertexAttribArray(0);
+	//启用着色器
+	glUseProgram(shaderProgram);
+```
+
+## 顶点数组对象（VAO）
+
+但是每一次绘图感觉都要经历这么多操作，感觉很麻烦，创建很多歌VAO换着绑定就可以了
+
+![image-20221024201457324](README.assets/image-20221024201457324.png)
+
+```C++
+//顶点输入
+float vertices[] = {
+-0.5f, -0.5f, 0.0f,
+ 0.5f, -0.5f, 0.0f,
+ 0.0f,  0.5f, 0.0f
+};
+//顶点缓冲对象
+unsigned int VBO;
+glGenBuffers(1, &VBO);//意思就是把1绑定在VBO上了，缓冲ID为1，是独一无二的
+//顶点数组对象
+unsigned int VAO;
+glGenVertexArrays(1, &VAO);//意思就是把1绑定在VBO上了，缓冲ID为1，是独一无二的
+//绑定顶点数组
+glBindVertexArray(VAO);
+//确定数组的数据以及位置
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+//着色器的创建
+const char* vertexShaderSource = "#version 330 core\n"
+	"layout (location = 0) in vec3 aPos;\n"
+	"void main()\n"
+	"{\n"
+	"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+	"}\0";
+unsigned int vertexShader;
+vertexShader = glCreateShader(GL_VERTEX_SHADER);
+glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+glCompileShader(vertexShader);
+
+//片段着色器的创建
+const char* fragmentShaderSource = "#version 330 core\n"
+	"out vec4 FragColor;\n"
+	"void main()\n"
+	"{\n"
+	"    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0);\n"
+	"}\0";
+
+unsigned int fragmentShader;
+fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+glCompileShader(fragmentShader);
+//创建着色器程序
+unsigned int shaderProgram;
+shaderProgram = glCreateProgram();
+glAttachShader(shaderProgram, vertexShader);
+glAttachShader(shaderProgram, fragmentShader);
+glLinkProgram(shaderProgram);
+
+//删除着色器
+glDeleteShader(vertexShader);
+glDeleteShader(fragmentShader);
+//告诉GPU数据的形式
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GL_FLOAT), (void*)0);
+//启用0号顶点属性
+glEnableVertexAttribArray(0);
+
+//下面几行的代码就实现了一个简单的渲染循环：
+while (!glfwWindowShouldClose(window))
+{
+	//输入
+	processInput(window);//检查是否按了esc，没有按就不会把window设置为需要关闭
+	//启用着色器
+	glUseProgram(shaderProgram);
+	//绑定顶点数组
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	////渲染指令
+	//glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT);
+
+	//检查并调用事件，交换缓冲
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+}
+```
+
+## 索引缓冲对象
+
+glDrawElements函数从当前绑定到GL_ELEMENT_ARRAY_BUFFER目标的EBO中获取其索引。这意味着我们每次想要使用索引渲染对象时都必须绑定相应的EBO
+
+碰巧顶点数组对象也跟踪元素缓冲区对象绑定
+
+//记住：当VAO处于活动状态时，不要解除绑定EBO，因为绑定元素缓冲区对象存储在VAO中；保持EBO的约束。
+
+## 所有流程
+
+1. 提前写好着色器、顶点数组、索引数组
+2. 创建VBO、VAO、EBO
+3. 告诉GPU怎么取
+
+## VAO、VBO、EBO的创建顺序和解绑顺序
+
+创建顺序
+
+vao-vbo-ebo
+
+解绑顺序
+
+vao-vbo-ebo
+
+### 需要每次绘制完后都解绑VAO,VBO吗?
+
+修改其他VAO都需要调用glBindVertexArray，它会直接解绑旧的对象并且绑定一个新的，因此通常情况下，我们不需要通过调用glBindVertexArray(O)来解绑VAO，当然VBO也是这样。所以在使用中，无需过度在意是否解绑了VAO和VBO，通常是不需要解绑的。
 
 ## 一些坑
 
@@ -93,19 +438,19 @@ Opengl是一个状态机，也就是说你不需要把它看成对象或类似�
 
 ### 检查错误的方法
 
-![image-20220909233415497](Opengl.assets\image-20220909233415497.png)
+![image-20220909233415497](README.assets\image-20220909233415497.png)
 
-![image-20220909233432147](Opengl.assets\image-20220909233432147.png)
+![image-20220909233432147](README.assets\image-20220909233432147.png)
 
 得到错误为1280,去glew.h文件里搜寻1280，注意1280要转换为16进制才能搜索
 
-![image-20220909233517773](Opengl.assets\image-20220909233517773.png)
+![image-20220909233517773](README.assets\image-20220909233517773.png)
 
 简单的转换办法就是在该函数右边加入一个断点进行调试，然后把鼠标放置error就可以获得错误
 
-![image-20220909234007405](Opengl.assets\image-20220909234007405.png)
+![image-20220909234007405](README.assets\image-20220909234007405.png)
 
-![image-20220909234139745](Opengl.assets\image-20220909234139745.png)
+![image-20220909234139745](README.assets\image-20220909234139745.png)
 
 ### 但实际上上述的方法我们还需要在每个函数上进行放置，并且需要自己手动设置断点
 
@@ -113,23 +458,23 @@ Opengl是一个状态机，也就是说你不需要把它看成对象或类似�
 
  需要定义一个宏
 
-![image-20220910023531944](Opengl.assets\image-20220910023531944.png)
+![image-20220910023531944](README.assets\image-20220910023531944.png)
 
-![image-20220910023602144](Opengl.assets\image-20220910023602144.png)
+![image-20220910023602144](README.assets\image-20220910023602144.png)
 
 ### 不用写更多的代码直接利用一个宏来找问题出在哪里
 
-![image-20220910024239255](Opengl.assets\image-20220910024239255.png)
+![image-20220910024239255](README.assets\image-20220910024239255.png)
 
 ### 最后想把发生错误的函数名称、函数来自于哪个代码文件，函数代码行数
 
-![image-20220910025414713](Opengl.assets\image-20220910025414713.png)
+![image-20220910025414713](README.assets\image-20220910025414713.png)
 
 ### uniform 
 
 可以在c++里设置图像的像素
 
-![image-20220910132920278](Opengl.assets\image-20220910132920278.png)
+![image-20220910132920278](README.assets\image-20220910132920278.png)
 
 ### 使用uniform可以使像素点根据时间发生变化
 
@@ -137,23 +482,23 @@ Opengl是一个状态机，也就是说你不需要把它看成对象或类似�
 
 ### 创建顶点数组缓冲区之后
 
-![image-20220910143501276](Opengl.assets\image-20220910143501276.png)
+![image-20220910143501276](README.assets\image-20220910143501276.png)
 
 创建顶点数组缓冲区之后
 
 我们不需要执行enableVertexAttribPointer代码以及 glVertexAttribPointer，删除即可
 
-![image-20220910143429543](Opengl.assets\image-20220910143429543.png)
+![image-20220910143429543](README.assets\image-20220910143429543.png)
 
-![image-20220910143924180](Opengl.assets\image-20220910143924180.png)
+![image-20220910143924180](README.assets\image-20220910143924180.png)
 
 ps.当我们绑定顶点数组和缓冲区的时候，实际上没有东西去连接这两个东西
 
-![image-20220910144240240](Opengl.assets\image-20220910144240240.png)
+![image-20220910144240240](README.assets\image-20220910144240240.png)
 
 但当我们实际上指定这个glVertexAttribPointer的时候，我们说的是这个顶点数组的索引为零的位置，将实际绑定到当前绑定的GL_ARRAY_BUFFER插槽里
 
-![image-20220910144327443](Opengl.assets\image-20220910144327443.png)
+![image-20220910144327443](README.assets\image-20220910144327443.png)
 
 所以上面这一行代码就是两者之间的连接器
 
@@ -165,7 +510,7 @@ ps.当我们绑定顶点数组和缓冲区的时候，实际上没有东西去�
 
 但是没关系，因为一般不会把这个写在主函数里面，如果想改变的话，就让glfwTerminate的代码放在作用域外面
 
-![image-20220911214713736](Opengl.assets\image-20220911214713736.png)
+![image-20220911214713736](README.assets\image-20220911214713736.png)
 
 ### 顶点数组的抽象
 
@@ -232,7 +577,7 @@ https://raw.githubusercontent.com/nothings/stb/master/stb_image.h进入复制
 
 创建一个vendor文件夹里的stb_image，使用第三库的原因
 
-![image-20220913165138211](Opengl.assets/image-20220913165138211.png)
+![image-20220913165138211](README.assets/image-20220913165138211.png)
 
 根据头文件编译
 
@@ -240,7 +585,7 @@ https://raw.githubusercontent.com/nothings/stb/master/stb_image.h进入复制
 
 纹理相当于一种贴图的感觉，纹理也需要纹理坐标
 
-![image-20220914174827330](Opengl.assets/image-20220914174827330.png)
+![image-20220914174827330](README.assets/image-20220914174827330.png)
 
 图里红框框就是纹理坐标，我们需要加载到GPU里，然后我们再加载一张图片，纹理坐标会根据图片进行采样，当然很明显有个问题就是，图片和我们要映射的区域很容易有差别，像素点也会有差别
 
@@ -248,13 +593,13 @@ https://raw.githubusercontent.com/nothings/stb/master/stb_image.h进入复制
 
 纹理数据在Shader里的处理
 
-这个**布局**需要格外注意一下，![image-20220914175613679](Opengl.assets/image-20220914175613679.png)
+这个**布局**需要格外注意一下，![image-20220914175613679](README.assets/image-20220914175613679.png)
 
 layout了两批数据，都是二维二维的，第一批为坐标，第二批为纹理坐标
 
 m_elements结构体里有两组数据
 
-![image-20220914175937237](Opengl.assets/image-20220914175937237.png)
+![image-20220914175937237](README.assets/image-20220914175937237.png)
 
 这两组数据是供glVertexAttribPointer使用的，很明显第一组坐标为0这个0要与shader里的location对应，第二组为1，
 
@@ -270,7 +615,7 @@ glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4个字节, (const void*)2));
 
 然后我们去Basic.shader里看，location与之对应，这样我们才取得到数据，
 
-![image-20220914180519026](Opengl.assets/image-20220914180519026.png)
+![image-20220914180519026](README.assets/image-20220914180519026.png)
 
 ## Opengl的数学库
 
@@ -278,15 +623,15 @@ https://github.com/g-truc/glm
 
 复制粘贴到这个目录下
 
-![image-20220915001342935](Opengl.assets/image-20220915001342935.png)
+![image-20220915001342935](README.assets/image-20220915001342935.png)
 
 将该文件移除
 
 因为里面也含有一个main()函数，这样我们就没法编译了
 
-![image-20220915001855754](Opengl.assets/image-20220915001855754.png)
+![image-20220915001855754](README.assets/image-20220915001855754.png)
 
-![image-20220915210737739](Opengl.assets/image-20220915210737739.png)
+![image-20220915210737739](README.assets/image-20220915210737739.png)
 
 
 
@@ -296,15 +641,15 @@ https://github.com/g-truc/glm
 
 顶点矩阵
 
-![image-20220915210818651](Opengl.assets/image-20220915210818651.png)
+![image-20220915210818651](README.assets/image-20220915210818651.png)
 
 投影矩阵
 
-![image-20220915210836625](Opengl.assets/image-20220915210836625.png)
+![image-20220915210836625](README.assets/image-20220915210836625.png)
 
 由于-0.5f是-2.0f的四分之一，所以会在整个屏幕的四分之一处，也就是所在窗口的四分之一处
 
-![image-20220915211027849](Opengl.assets/image-20220915211027849.png)
+![image-20220915211027849](README.assets/image-20220915211027849.png)
 
 # VA(visual assist番茄助手的安装)
 
@@ -312,9 +657,9 @@ https://github.com/g-truc/glm
 
 ## 复制CRACK里的VA_X.dll进入文件夹里
 
-![image-20220911205336666](Opengl.assets\image-20220911205336666.png)
+![image-20220911205336666](README.assets\image-20220911205336666.png)
 
-![image-20220911205418445](Opengl.assets\image-20220911205418445.png)
+![image-20220911205418445](README.assets\image-20220911205418445.png)
 
 # 完整代码
 
