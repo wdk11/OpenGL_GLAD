@@ -3,17 +3,33 @@
 #include <iostream>
 #include "Shader.h"
 #include <filesystem>
-#include "vendor/stb_image.h"
+#include "stb_image/stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 //#include <direct.h>
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
-
+float mixValue = 0.2f;
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		mixValue += 0.005f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (mixValue >= 1.0f)
+			mixValue = 1.0f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		mixValue -= 0.005f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (mixValue <= 0.0f)
+			mixValue = 0.0f;
+	}
 }
 
 int main()
@@ -50,7 +66,7 @@ int main()
 		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
 			 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
 			 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-			-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
+			-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,  // 左下
 			-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
 	};
 	//索引输入
@@ -63,15 +79,56 @@ int main()
 		1, 2, 3  // 第二个三角形
 	};
 	//纹理图片的加载
+		//第一张图片
+	unsigned int texture1, texture2;
 	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load("./res/texture/container.jpg", &width, &height, &nrChannels, 0);
+		//第一张纹理的创建
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);//横向镜像复制
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);//纵向复制
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//纹理被缩小使用邻近过滤
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//被放大时使用线性过滤
+		//第一张纹理图片数据传输
+	if (data)
+	{
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);//图片数据加载
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		glGenerateMipmap(GL_TEXTURE_2D);//当调用glTexImage2D时，当前绑定的纹理对象就会被附加上纹理图像
+	}
+		//释放第一张纹理图片
+	stbi_image_free(data);
+	//第二张图片
+
+	data = stbi_load("./res/texture/awesomeface.jpg", &width, &height, &nrChannels, 0);
+		//第二张纹理的创建
+	glGenTextures(1, &texture2);
+		//第二张纹理的创建
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);//横向复制
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);//纵向复制
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//纹理被缩小使用邻近过滤
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//被放大时使用线性过滤
+		//第二张纹理图片数据传输
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);//图片数据加载
+		glGenerateMipmap(GL_TEXTURE_2D);//当调用glTexImage2D时，当前绑定的纹理对象就会被附加上纹理图像
+	}
+		//释放第二张纹理图片
+	stbi_image_free(data);
+
+
+
 	//创建VBO、VAO、EBO、texture
-	unsigned int VBO, VAO, EBO, texture;
 	//四者的创建
+	unsigned int VAO, VBO, EBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
-	glGenTextures(1, &texture);
 	//四者的绑定
 		//1.顶点数组的绑定
 	glBindVertexArray(VAO);
@@ -81,22 +138,6 @@ int main()
 		//3.索引缓冲的绑定以及数据绑定
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-		//4.纹理数据的绑定
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);//横向复制
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);//纵向复制
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);//纹理被缩小使用邻近过滤
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);//被放大时使用线性过滤
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);//图片数据加载
-		glGenerateMipmap(GL_TEXTURE_2D);//当调用glTexImage2D时，当前绑定的纹理对象就会被附加上纹理图像
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(data);
 	//告诉GPU怎么取
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -106,7 +147,10 @@ int main()
 	glEnableVertexAttribArray(2);
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);//解绑
 	//glBindVertexArray(0);//解绑
-
+	//使用uniform
+	shader.use();
+	shader.setInt((shader.ID, "texture1"), 0);
+	shader.setInt((shader.ID, "texture2"), 1);
 	////索引缓冲对象
 	//unsigned int IBO;
 	//glGenBuffers(1, &IBO);
@@ -138,7 +182,18 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//启用着色器
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 		shader.use();
+		shader.setFloat("mixValue", mixValue);
+		//随着时间旋转
+		//设置一个旋转uniform
+		glm::mat4 trans;
+		trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
+		trans = glm::rotate(trans, float(glfwGetTime()), glm::vec3(0.0, 0.0, 1.0));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "trans"), 1, GL_FALSE, glm::value_ptr(trans));
 		//shader.setFloat("someUniform", 0.5f);
 		////使用uniform
 		//float timeValue = glfwGetTime();
@@ -147,6 +202,14 @@ int main()
 		//glUniform4f(vertexColorLacation, 0.0f, greenValue, 0.0f, 1.0f);
 		//绑定顶点数组
 		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//第二个箱子
+		//设置一个缩放uniform
+		trans = glm::mat2(1.0f);
+		trans = glm::translate(trans, glm::vec3(-0.5, 0.5, 0.0));
+		trans = glm::scale(trans, glm::vec3(glm::sin(float(glfwGetTime())), glm::sin(float(glfwGetTime())), 0.0));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "trans"), 1, GL_FALSE, glm::value_ptr(trans));
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		////渲染指令
@@ -158,7 +221,7 @@ int main()
 	}
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	//glDeleteBuffers(1, &EBO);
+	glDeleteBuffers(1, &EBO);
 	glDeleteProgram(shader.ID);
 	glfwTerminate();//相当于释放所有资源
 
