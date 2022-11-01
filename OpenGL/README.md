@@ -697,6 +697,7 @@ void processInput(GLFWwindow* window)
 		if (mixValue <= 0.0f)
 			mixValue = 0.0f;
 	}
+```C++
 }
 
 int main()
@@ -741,6 +742,9 @@ int main()
 		// 注意索引从0开始! 
 		// 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
 		// 这样可以由下标代表顶点组合成矩形
+```
+
+
 
 ```C++
 	0, 1, 3, // 第一个三角形
@@ -898,6 +902,81 @@ glfwTerminate();//相当于释放所有资源
 return 0;
 }
 ```
+## MVP,模型矩阵、视图矩阵、投影矩阵
+
+模型矩阵用来移动物体、视图矩阵用来调整我们在哪里观察这个物体，投影矩阵会看起来有距离感，无非在shader里面放几个mvp矩阵，在外面定义一下
+
+![image-20221031153326159](README.assets/image-20221031153326159.png)
+
+## Z缓冲
+
+由于OpenGL是一个一个三角形进行绘制的，很容易导致后面画的三角形覆盖了前面的三角形，所以按道理而言应该有个深度信息保留在设备内部以供调用
+
+1.先调用深度测试
+
+```C++
+glEnable(GL_DEPTH_TEST);
+```
+
+2.再记得每次都要清楚深度缓冲，不然他还在记录上一次的深度缓冲信息
+
+```C++
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+```
+
+## 多个图形
+
+```c++
+	//随着时间旋转
+	//创建mvp矩阵以及uniform
+	//glm::mat4 model;
+	//model = glm::rotate(model, glm::radians((float)glfwGetTime() * 50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+	glm::mat4 view;
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 projection;
+	projection = glm::perspective(glm::radians(45.0f), screenWidth / screenHeight, 0.1f, 100.0f);//第二个参数是float参数
+	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//可以用indices索引画图
+	//glDrawArrays(GL_TRIANGLES, 0, 36);//不用indices画
+	for (unsigned int i = 0; i < 10; i++)
+	{
+		glm::mat4 model;
+		model = glm::translate(model, cubePositions[i]);
+		float angle = 20.0f * i;
+		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);//不用indices画
+	}
+```
+
+## 摄像机
+
+摄像机其实就是一个view矩阵，只不过这个view可以使得物体移动啥的，主要创建是lookAt函数提供摄像机的位置，视线方向，以及一个朝上的方向，就可以直接建一个lookAt函数出来
+
+自由移动：可以调整摄像机的pos
+
+## 渲染
+
+每个人的电脑每秒渲染的次数不一样，那么就调用的processInput次数也不一样，我们需要保持在所有硬件上移动速度都一样，记得把速度乘上一个deltatime
+
+## 怎么控制视线方向一直不变
+
+![image-20221031230825422](README.assets/image-20221031230825422.png)
+
+为什么视线方向一直不变呢，是因为视线方向=![image-20221031230901145](README.assets/image-20221031230901145.png)
+
+很明显这个Front不变，那么都不变
+
+## 摄像机的视角移动
+
+欧拉角：俯仰角、偏航角、滚转角
+
+事例里面我感觉更多的是对于一个原点进行的一种旋转移动，当然这个根据相当而言也没问题
+
+查了一下，glfwSetCursorPosCallback返回给mouse_callback函数的 (x,y) 是鼠标相对于窗口左【上】角的位置，所以需要将 (ypos - lastY) 取反
+
 # 一些坑
 
 ### 在glewInit()之前记得先创建一个初始化的Opengl上下文窗口

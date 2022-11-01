@@ -183,7 +183,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\texture\awesomeface.jpg" />
+    <Image Include="res\texture\bin.jpg" />
     <Image Include="res\texture\container.jpg" />
+    <Image Include="res\texture\haozi.jpg" />
+    <Image Include="res\texture\haozi1.jpg" />
+    <Image Include="res\texture\tou.jpg" />
+    <Image Include="res\texture\tou1.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

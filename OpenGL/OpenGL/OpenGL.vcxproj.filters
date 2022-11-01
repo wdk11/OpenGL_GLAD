@@ -58,5 +58,20 @@
     <Image Include="res\texture\awesomeface.jpg">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="res\texture\bin.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\texture\haozi1.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\texture\haozi.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\texture\tou1.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="res\texture\tou.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>
