@@ -977,6 +977,10 @@ glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 查了一下，glfwSetCursorPosCallback返回给mouse_callback函数的 (x,y) 是鼠标相对于窗口左【上】角的位置，所以需要将 (ypos - lastY) 取反
 
+## ImGUI
+
+
+
 # 一些坑
 
 ### 在glewInit()之前记得先创建一个初始化的Opengl上下文窗口
