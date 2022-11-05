@@ -979,7 +979,113 @@ glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 ## ImGUI
 
+使用示例
 
+```c++
+while (!glfwWindowShouldClose(window))
+	{
+```
+
+
+
+```c++
+	//std::cout << "Current path is " << std::filesystem::current_path() << '\n';
+	//输入
+	processInput(window);//检查是否按了esc，没有按就不会把window设置为需要关闭
+	ImGui_ImplGlfwGL3_NewFrame();
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//启用着色器
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	shader.use();
+	shader.setFloat("mixValue", mixValue);
+	glBindVertexArray(VAO);
+	//随着时间旋转
+	//创建mvp矩阵以及uniform
+	//glm::mat4 model;
+	//model = glm::rotate(model, glm::radians((float)glfwGetTime() * 50.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	//摄像机矩阵
+	glm::mat4 view;
+	//float radius = 10.0f;
+	//float x = sin(glfwGetTime()) * radius;
+	//float z = cos(glfwGetTime()) * radius;
+	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	glm::mat4 projection;
+	projection = glm::perspective(glm::radians(fov), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);//第二个参数是float参数
+	//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);//可以用indices索引画图
+	//glDrawArrays(GL_TRIANGLES, 0, 36);//不用indices画
+	for (unsigned int i = 0; i < 10; i++)
+	{
+		glm::mat4 model = glm::mat2(1.0f);
+		model = glm::translate(model, cubePositions[i]);
+		float angle = 20.0f * i;
+		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);//不用indices画
+	}
+	{
+		/*static float f = 0.0f;*/
+		static int counter = 0;
+		ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
+		//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our windows open/close state
+		ImGui::Checkbox("Another Window", &show_another_window);
+
+		if (ImGui::Button("Button"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
+			counter++;
+		ImGui::SameLine();
+		ImGui::Text("counter = %d", counter);
+
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	}
+	ImGui::Render();
+	ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+	//渲染指令
+	//glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//检查并调用事件，交换缓冲
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+}
+glDeleteVertexArrays(1, &VAO);
+glDeleteBuffers(1, &VBO);
+glDeleteBuffers(1, &EBO);
+glDeleteProgram(shader.ID);
+ImGui_ImplGlfwGL3_Shutdown();
+ImGui::DestroyContext();
+glfwTerminate();//相当于释放所有资源
+```
+
+## 颜色
+
+首先一个表示灯的立方体，所以我们还要为这个灯创建一个专门的VAO
+
+![image-20221103235350652](README.assets/image-20221103235350652.png)
+
+创建的第二个VAO也可以共用一个VBO，看现在到底绑定的谁就用谁的数据
+
+## 光照
+
+就是给一个光源新建一个shader，新建一个vao，用不同的vao和shader画就可以了
+
+## 漫反射光照
+
+![image-20221104101514648](README.assets/image-20221104101514648.png)
+
+## 漫反射光照的输入
+
+首先就是灯源位置，这个是不变的，然后是一个又一个的顶点位置输入进来，这一个又一个顶点位置的法向向量已经被我们计算了，放在后面，所以是一批一批的走的
+
+但是我陷入了怎么和imgui配合的问题
 
 # 一些坑
 
