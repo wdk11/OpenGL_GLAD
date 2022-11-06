@@ -329,6 +329,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//œ»ª≠ŒÔ∆∑
 		shader.use();
+		shader.setVec3("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
 		shader.setFloat("amibentStrengh", ambientStrength);
 		shader.setVec3("lightPos", lightPos.x, lightPos.y, lightPos.z);
 		shader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
