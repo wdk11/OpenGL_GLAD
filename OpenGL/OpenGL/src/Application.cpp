@@ -23,7 +23,8 @@ bool firstMouse = true;
 glm::vec3 direction;
 float fov = 45.0f;
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-float ambientStrength = 1.0;
+float ambientStrength = 0.0;
+float specularStrength = 0.5;
 static void glfw_error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error %d: %s\n", error, description);
@@ -111,7 +112,11 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	//cameraPos.y = 0.0f;
-}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		specularStrength += 0.1;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		specularStrength -= 0.1;
+}		
 int main()
 {
 	glfwInit();//确定版本，并进行初始化
@@ -313,13 +318,12 @@ int main()
 	//shader.setInt((shader.ID, "texture1"), 0);
 	//shader.setInt((shader.ID, "texture2"), 1);
 	glEnable(GL_DEPTH_TEST);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	//下面几行的代码就实现了一个简单的渲染循环：
 	while (!glfwWindowShouldClose(window))
 	{
-
 		//std::cout << "Current path is " << std::filesystem::current_path() << '\n';
 		//输入
 		processInput(window);//检查是否按了esc，没有按就不会把window设置为需要关闭
@@ -327,10 +331,33 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		{
+			/*static float f = 0.0f;*/
+			static int counter = 0;
+			ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
+			//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+			ImGui::SliderFloat("ambientStrength", &ambientStrength, 0.0f, 1.0f);
+			ImGui::SliderFloat("specularStrength", &specularStrength, 0.0f, 1.0f);
+			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our windows open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+			if (ImGui::Button("Button"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		}
 		//先画物品
 		shader.use();
+		shader.setFloat("ambientStrength", ambientStrength);
 		shader.setVec3("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
-		shader.setFloat("amibentStrengh", ambientStrength);
+		std::cout << cameraPos.x << std::endl;
+		std::cout << cameraPos.y << std::endl;
+		std::cout << cameraPos.z << std::endl;
+		shader.setFloat("specularStrength", specularStrength);
+		lightPos.x = 1.0f + glm::sin(glfwGetTime()) * 2;
+		lightPos.y = glm::sin(glfwGetTime() / 2.0f);
 		shader.setVec3("lightPos", lightPos.x, lightPos.y, lightPos.z);
 		shader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
 		shader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
@@ -395,23 +422,6 @@ int main()
 		//}
 		//glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		//glDrawArrays(GL_TRIANGLES, 0, 36);//不用indices画
-		{
-			/*static float f = 0.0f;*/
-			static int counter = 0;
-			ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
-			//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-			ImGui::SliderFloat("float", &ambientStrength, 0.0f, 1.0f);
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our windows open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
-			std::cout << ambientStrength << std::endl;
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		}
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 		//渲染指令
